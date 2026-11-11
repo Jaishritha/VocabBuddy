@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VocabBuddy — Learn a word by speaking</title>
+<style>
+:root{--ink:#182238;--muted:#68738a;--purple:#6558d3;--purple2:#eeeaff;--line:#e7e9f1;--green:#16845b;--red:#c44d55}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:linear-gradient(135deg,#f6f5ff,#f4f8ff 55%,#f7fbf8);font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;color:var(--ink);display:grid;place-items:center;padding:24px}
+.app{width:min(760px,100%);background:#fff;border:1px solid #ececf5;border-radius:25px;box-shadow:0 22px 70px #28345a16;overflow:hidden}
+header{padding:25px 30px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:12px}
+.brand{font-weight:800;font-size:20px;letter-spacing:-.5px}.brand span{color:var(--purple)}.tag{font-size:12px;color:var(--muted);background:#f4f5fa;padding:8px 12px;border-radius:30px}
+main{padding:32px;display:grid;grid-template-columns:1fr .9fr;gap:25px}
+.eyebrow{text-transform:uppercase;letter-spacing:1.5px;font-size:11px;font-weight:800;color:var(--purple)}
+h1{font-size:38px;line-height:1.08;margin:12px 0 8px;letter-spacing:-1.4px}
+.pron{color:var(--muted);font-size:14px;margin-bottom:22px}
+.meaning{font-size:17px;line-height:1.55;margin:0 0 17px}
+.example{padding:15px 17px;background:#f7f7fc;border-left:3px solid var(--purple);border-radius:8px;color:#48536a;line-height:1.5;font-size:14px}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px}
+button{border:0;border-radius:12px;padding:12px 16px;font-weight:700;font-size:14px;cursor:pointer;transition:.15s}
+button:focus-visible{outline:3px solid #aaa2ff;outline-offset:2px}
+.primary{background:var(--purple);color:#fff}.secondary{background:var(--purple2);color:var(--purple)}.plain{background:#f3f4f8;color:#46516a}
+button:hover{transform:translateY(-1px);filter:brightness(.98)}
+.panel{background:#fafaff;border:1px solid var(--line);border-radius:18px;padding:20px;display:flex;flex-direction:column}
+.panel h2{font-size:17px;margin:0 0 6px}.hint{font-size:13px;color:var(--muted);line-height:1.45;margin:0 0 16px}
+.mic{width:74px;height:74px;border-radius:50%;margin:8px auto 13px;background:var(--purple2);color:var(--purple);font-size:28px;display:grid;place-items:center}
+.mic.listening{background:#ffe9eb;color:var(--red);animation:pulse 1.2s infinite}
+@keyframes pulse{50%{box-shadow:0 0 0 10px #ffe9eb88}}
+#listenBtn{width:100%}.transcript{min-height:52px;padding:12px;background:#fff;border:1px dashed #d8d9e8;border-radius:10px;font-size:13px;color:#59647a;margin-top:12px;line-height:1.45}
+.feedback{min-height:38px;font-size:13px;font-weight:700;margin-top:10px;line-height:1.4}
+.feedback.good{color:var(--green)}.feedback.bad{color:var(--red)}
+.footer{padding:0 32px 25px;display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:12px;gap:12px}
+.progress{height:6px;background:#eeeef5;border-radius:9px;overflow:hidden;margin-top:7px;width:160px}.bar{height:100%;background:var(--purple);width:20%;transition:width .2s}
+@media(max-width:650px){main{grid-template-columns:1fr;padding:23px}header{padding:20px 23px}h1{font-size:34px}.footer{padding:0 23px 23px;flex-wrap:wrap}}
+</style>
+</head>
+<body>
+<div class="app">
+<header><div class="brand">✦ Vocab<span>Buddy</span></div><div class="tag">A little practice, every day</div></header>
+<main>
+<section>
+<div class="eyebrow" id="counter">WORD 1 OF 5</div>
+<h1 id="word">Curious</h1>
+<div class="pron" id="pron">/ˈkyʊəriəs/ · adjective</div>
+<p class="meaning" id="meaning">Eager to know or learn something.</p>
+<div class="example" id="example">“The curious student asked questions about how the machine worked.”</div>
+<div class="actions">
+<button class="secondary" id="speakBtn">🔊 Hear the word</button>
+<button class="plain" id="exampleBtn">▶ Hear example</button>
+</div>
+</section>
+<section class="panel">
+<h2>Say what it means</h2>
+<p class="hint">Tap the microphone and explain the word in your own words. You can also type your answer if voice input isn't available.</p>
+<div class="mic" id="micIcon">🎙️</div>
+<button class="primary" id="listenBtn">Start speaking</button>
+<div class="transcript" id="transcript">Your spoken answer will appear here…</div>
+<input id="typed" aria-label="Type your meaning" placeholder="Or type your meaning here…" style="margin-top:10px;width:100%;padding:12px;border:1px solid #dfe1ec;border-radius:10px;font:inherit;font-size:13px">
+<button class="secondary" id="checkBtn" style="margin-top:10px">Check my answer</button>
+<div class="feedback" id="feedback" aria-live="polite"></div>
+</section>
+</main>
+<div class="footer">
+<div><span id="progressText">1 of 5 words practised</span><div class="progress"><div class="bar" id="bar"></div></div></div>
+<button class="plain" id="nextBtn">Next word →</button>
+</div>
+</div>
+<script>
+const words=[
+ {word:"Curious",pron:"/ˈkyʊəriəs/ · adjective",meaning:"Eager to know or learn something.",example:"The curious student asked questions about how the machine worked.",keywords:["eager","want","learn","know","interested","question","discover"]},
+ {word:"Resilient",pron:"/rɪˈzɪliənt/ · adjective",meaning:"Able to recover or bounce back after difficulty.",example:"She stayed resilient and tried again after failing the first test.",keywords:["recover","bounce","back","difficult","strong","again","setback","failure"]},
+ {word:"Generous",pron:"/ˈdʒenərəs/ · adjective",meaning:"Willing to give or share more than is expected.",example:"It was generous of him to share his notes with the whole class.",keywords:["give","share","help","kind","giving","others"]},
+ {word:"Precise",pron:"/prɪˈsaɪs/ · adjective",meaning:"Exact and accurate, with no unnecessary details.",example:"Please give me the precise time of the meeting.",keywords:["exact","accurate","correct","specific","detail"]},
+ {word:"Hesitate",pron:"/ˈhezɪteɪt/ · verb",meaning:"To pause before doing or saying something because you are unsure.",example:"Do not hesitate to ask if you need help.",keywords:["pause","unsure","uncertain","delay","nervous","wait"]}
+];
+let index=0,recognized="";
+const $=id=>document.getElementById(id);
+function render(){const w=words[index];$("counter").textContent=`WORD ${index+1} OF ${words.length}`;$("word").textContent=w.word;$("pron").textContent=w.pron;$("meaning").textContent=w.meaning;$("example").textContent="“"+w.example+"”";$("progressText").textContent=`${index+1} of ${words.length} words practised`;$("bar").style.width=((index+1)/words.length*100)+"%";$("transcript").textContent="Your spoken answer will appear here…";$("typed").value="";$("feedback").textContent="";$("feedback").className="feedback";recognized="";$("nextBtn").textContent=index===words.length-1?"Start again ↻":"Next word →";}
+function speak(text){if(!("speechSynthesis" in window)){alert("Speech playback is not supported in this browser.");return;}speechSynthesis.cancel();const utterance=new SpeechSynthesisUtterance(text);utterance.lang="en-US";utterance.rate=.88;speechSynthesis.speak(utterance);}
+$("speakBtn").onclick=()=>speak(words[index].word);
+$("exampleBtn").onclick=()=>speak(words[index].example);
+function checkAnswer(){const answer=($("typed").value||recognized).toLowerCase().trim();if(!answer){$("feedback").textContent="Please speak or type your explanation first.";$("feedback").className="feedback bad";return;}const w=words[index];const hits=w.keywords.filter(k=>answer.includes(k));if(hits.length){$("feedback").textContent="Nice work! Your answer includes the idea of “"+w.meaning.toLowerCase()+"” Keep going!";$("feedback").className="feedback good";}else{$("feedback").textContent="Good attempt! Hint: "+w.meaning+" Try explaining it in your own words.";$("feedback").className="feedback bad";}}
+$("checkBtn").onclick=checkAnswer;
+$("nextBtn").onclick=()=>{index=(index+1)%words.length;render();};
+$("listenBtn").onclick=()=>{const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR){$("feedback").textContent="Voice recognition isn't available here. Type your answer in the box instead, or open this page in Chrome."; $("feedback").className="feedback bad";return;}const recognition=new SR();recognition.lang="en-US";recognition.interimResults=false;recognition.maxAlternatives=1;recognition.onstart=()=>{$("listenBtn").textContent="Listening… tap to stop";$("micIcon").classList.add("listening");$("transcript").textContent="Listening — speak now…";};recognition.onresult=e=>{recognized=e.results[0][0].transcript;$("transcript").textContent="“"+recognized+"”";$("typed").value=recognized;};recognition.onerror=e=>{$("feedback").textContent="I couldn't hear that clearly ("+e.error+"). Please try again or type your answer.";$("feedback").className="feedback bad";};recognition.onend=()=>{$("listenBtn").textContent="Start speaking";$("micIcon").classList.remove("listening");};recognition.start();};
+render();
+</script>
+</body>
+</html>
